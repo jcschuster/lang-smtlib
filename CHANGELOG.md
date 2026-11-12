@@ -10,6 +10,8 @@ The SMT-LIB reference the grammar was written from is recorded in `package.json`
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-11-12
+
 ### Added
 
 - `codemirror-lang-smtlib`: a CodeMirror 6 language (Lezer parser) for SMT-LIB 2.7 scripts,
