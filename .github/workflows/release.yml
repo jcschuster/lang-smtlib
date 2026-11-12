@@ -1,6 +1,6 @@
 name: release
 
-# Publishes the version in the package (see .github/scripts/version.sh) to npm, and creates
+# Stages the version in the package (see .github/scripts/version.sh) to npm, and creates
 # its GitHub release and tag v<version>, when a pull request labelled `release` is merged
 # into main. The release notes are that version's CHANGELOG section as merged.
 #
@@ -9,9 +9,11 @@ name: release
 #
 # npm authenticates this workflow through trusted publishing (OIDC): the package has a
 # trusted publisher on npmjs.com for jcschuster/lang-smtlib, workflow release.yml, with
-# `npm publish` allowed. An NPM_TOKEN secret, if set, is only a fallback. Run
+# `npm stage publish` allowed. An NPM_TOKEN secret, if set, is only a fallback. Run
 # workflow_dispatch to retry a release that failed part-way: a version already on npm is
 # skipped.
+# A version still staged blocks a retry, as npm stages a version only once: approve or
+# reject it on npmjs.com first.
 
 on:
   pull_request:
@@ -63,7 +65,7 @@ jobs:
       - name: Test what is about to be published
         run: nix develop --command .github/scripts/test-all.sh
 
-      - name: Publish to npm
+      - name: Stage on npm
         env:
           VERSION: ${{ steps.version.outputs.version }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -77,26 +79,13 @@ jobs:
             package=codemirror-lang-smtlib
             # Asked from outside the workspace, whose devEngines npm would refuse.
             if (cd "$RUNNER_TEMP" && npm view "$package@$VERSION" version) >/dev/null 2>&1; then
-              echo "$package@$VERSION is already on npm"
+              echo "- \`$package@$VERSION\` is already live on npm" >> "$GITHUB_STEP_SUMMARY"
             else
-              (cd "packages/$package" && npm publish --access public)
-            fi
-
-            # npm can accept a publish and still hold the version back, for review or as
-            # a staged version. Say so, rather than report a release nobody can install yet.
-            live=false
-            for _ in $(seq 12); do
-              if (cd "$RUNNER_TEMP" && npm view --prefer-online "$package@$VERSION" version) >/dev/null 2>&1; then
-                live=true
-                break
-              fi
-              sleep 10
-            done
-            if [ "$live" = true ]; then
-              echo "- \`$package@$VERSION\` is live on npm" >> "$GITHUB_STEP_SUMMARY"
-            else
-              echo "::warning::$package@$VERSION is not on npm two minutes after publishing. npm may be holding it for review or as a staged version: see https://www.npmjs.com/package/$package and approve it under Staged Packages if asked."
-              echo "- \`$package@$VERSION\` is **not live yet**: check npmjs.com, Staged Packages" >> "$GITHUB_STEP_SUMMARY"
+              # Staged, not published: the version goes live once a maintainer approves it
+              # with 2FA.
+              (cd "packages/$package" && npm stage publish --access public)
+              echo "::notice::$package@$VERSION is staged. Approve it on https://www.npmjs.com/package/$package (Staged Packages) to publish it."
+              echo "- \`$package@$VERSION\` is **staged**: approve it on npmjs.com (Staged Packages) to publish it" >> "$GITHUB_STEP_SUMMARY"
             fi
           '
 
