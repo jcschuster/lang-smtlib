@@ -1,0 +1,18 @@
+; define-const, define-sort, recursive definitions, get-assertions and get-assignment.
+; oracle: z3 cvc5
+(set-option :produce-assertions true)
+(set-option :produce-assignments true)
+(set-logic ALL)
+(define-sort IntSet () (Array Int Bool))
+(declare-const empty IntSet)
+(define-const zero Int 0)
+(define-fun-rec fact ((n Int)) Int (ite (<= n 0) 1 (* n (fact (- n 1)))))
+(define-funs-rec ((ev ((n Int)) Bool) (od ((n Int)) Bool))
+  ((ite (= n 0) true (od (- n 1))) (ite (= n 0) false (ev (- n 1)))))
+(declare-const k Int)
+(assert (! (= (fact 3) 6) :named f3))
+(assert (! (ev 4) :named e4))
+(assert (not (select empty (+ k zero))))
+(check-sat)
+(get-assertions)
+(get-assignment)

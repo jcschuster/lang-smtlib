@@ -1,0 +1,2 @@
+FROM docker.io/library/node:26-trixie
+RUN npm install --global pnpm@12.14.0

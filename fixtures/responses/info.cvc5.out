@@ -1,0 +1,9 @@
+(:name "cvc5")
+(:error-behavior immediate-exit)
+(:assertion-stack-levels 0)
+false
+42
+"hello"
+sat
+sat
+sat

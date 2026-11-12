@@ -1,0 +1,20 @@
+; Algebraic datatypes: monomorphic, parametric and mutually recursive, with match and the
+; _ wildcard pattern of 2.7, which cvc5 1.4.0 rejects.
+; oracle: z3
+(set-option :produce-models true)
+(set-logic ALL)
+(declare-datatype Color ((red) (green) (blue)))
+(declare-datatype Pair (par (X Y) ((pair (fst X) (snd Y)))))
+(declare-datatypes ((Tree 0) (Forest 0))
+  (((leaf (value Int)) (node (children Forest)))
+   ((empty) (grow (head Tree) (tail Forest)))))
+(declare-const c Color)
+(declare-const p (Pair Int Color))
+(declare-const t Tree)
+(define-fun size ((f Forest)) Int (match f ((empty 0) ((grow _ rest) 1))))
+(assert (not (= c red)))
+(assert (= (snd p) c))
+(assert (match t (((leaf v) (> v 3)) ((node cs) (= (size cs) 1)))))
+(assert ((_ is node) t))
+(check-sat)
+(get-value (c (fst p)))

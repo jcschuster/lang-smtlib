@@ -1,0 +1,23 @@
+; Scripted interaction with :print-success on, so that every command answers: options and
+; info before the logic, declarations, two scopes opened and closed with numerals, and exit.
+; oracle: z3 cvc5
+(set-option :print-success true)
+(set-option :produce-models true)
+(set-info :smt-lib-version 2.7)
+(set-info :status unknown)
+(set-logic QF_LRA)
+(declare-const a Real)
+(declare-const b Real)
+(declare-const c Real)
+(assert (< a b))
+(assert (<= b (- c 1.0)))
+(push 1)
+(assert (>= a c))
+(check-sat)
+(pop 1)
+(push 2)
+(assert (= c 0.5))
+(check-sat)
+(get-value (a b))
+(pop 2)
+(exit)

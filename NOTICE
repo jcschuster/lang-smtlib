@@ -1,0 +1,17 @@
+lang-smtlib is licensed under the MIT licence in LICENSE. Its grammar is written from the
+concrete syntax (Appendix B) and the lexicon (Section 3.1) of The SMT-LIB Standard,
+Version 2.7, by Clark Barrett, Pascal Fontaine and Cesare Tinelli, which that licence does
+not cover: spec/smtlib-2.7.bnf and spec/smtlib-2.7.lex are written from the reference,
+and gen/bnf2lezer.mjs generates smtlib.grammar, the parser built from it and words.ts from
+those two files. The reference carries this notice:
+
+    Copyright © 2015-25 Clark Barrett, Pascal Fontaine, and Cesare Tinelli.
+    Permission is granted to anyone to make or distribute verbatim copies of this
+    document, in any medium, provided that the copyright notice and permission
+    notice are preserved, and that the distributor grants the recipient permission
+    for further redistribution as permitted by this notice. Modified versions may
+    not be made.
+
+        -- https://smt-lib.org/papers/smt-lib-reference-v2.7-r2026-09-09.pdf
+
+spec/SOURCE records the release. See https://smt-lib.org.

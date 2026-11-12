@@ -1,0 +1,20 @@
+success
+success
+success
+success
+success
+success
+success
+success
+success
+success
+success
+success
+unsat
+success
+success
+success
+sat
+((a (/ (- 3) 4)) (b (/ (- 1) 2)))
+success
+success

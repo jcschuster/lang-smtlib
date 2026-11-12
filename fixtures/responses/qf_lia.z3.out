@@ -1,0 +1,4 @@
+sat
+unsat
+((> x 100) (not (> x 50)))
+unsat

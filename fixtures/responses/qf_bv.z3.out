@@ -1,0 +1,10 @@
+sat
+((a #x03)
+ (b #x0d)
+ ((low b) #xd))
+(
+  (define-fun b () (_ BitVec 8)
+    #x0d)
+  (define-fun a () (_ BitVec 8)
+    #x03)
+)

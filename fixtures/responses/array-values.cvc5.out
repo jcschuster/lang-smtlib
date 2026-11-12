@@ -1,0 +1,4 @@
+sat
+((k 0) ((g k) 0))
+(((select m k) ((as some (Opt Bool)) true)) ((select m (+ k 7)) (as none (Opt Bool))))
+((m (store ((as const (Array Int (Opt Bool))) (as none (Opt Bool))) 0 ((as some (Opt Bool)) true))))

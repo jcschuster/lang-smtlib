@@ -1,0 +1,95 @@
+# General responses {"top":"Responses"}
+
+success unsupported (error "line 3: unknown constant x")
+
+==>
+
+Responses(GeneralResponse(success),GeneralResponse(unsupported),GeneralResponse("(",error,String,")"))
+
+# check-sat and echo {"top":"Responses"}
+
+sat unsat unknown "printed"
+
+==>
+
+Responses(GeneralResponse(SpecificSuccessResponse(CheckSatResponse(sat))),GeneralResponse(SpecificSuccessResponse(CheckSatResponse(unsat))),GeneralResponse(SpecificSuccessResponse(CheckSatResponse(unknown))),GeneralResponse(SpecificSuccessResponse(EchoResponse(String))))
+
+# get-value {"top":"Responses"}
+
+((x 0) ((f x) (- 1)))
+
+==>
+
+Responses(GeneralResponse(SpecificSuccessResponse(GetValueResponse("(",ValuationPair("(",Term(QualIdentifier(Identifier(SimpleSymbol))),Term(Numeral),")"),ValuationPair("(",Term("(",QualIdentifier(Identifier(SimpleSymbol)),Term(QualIdentifier(Identifier(SimpleSymbol))),")"),Term("(",QualIdentifier(Identifier(SimpleSymbol)),Term(Numeral),")"),")"),")"))))
+
+# get-assignment {"top":"Responses"}
+
+((a true) (b false))
+
+==>
+
+Responses(GeneralResponse(SpecificSuccessResponse(GetAssignmentResponse("(",TValuationPair("(",SimpleSymbol,BValue(true),")"),TValuationPair("(",SimpleSymbol,BValue(false),")"),")"))))
+
+# get-model {"top":"Responses"}
+
+(
+  (define-fun x () Int 1)
+  (define-fun-rec f ((n Int)) Int (f n))
+  (define-funs-rec ((g () Bool)) (true))
+)
+
+==>
+
+Responses(GeneralResponse(SpecificSuccessResponse(GetModelResponse("(",ModelResponse("(","define-fun",FunctionDef(SimpleSymbol,"(",")",Sort(Identifier(SimpleSymbol)),Term(Numeral)),")"),ModelResponse("(","define-fun-rec",FunctionDef(SimpleSymbol,"(",SortedVar("(",SimpleSymbol,Sort(Identifier(SimpleSymbol)),")"),")",Sort(Identifier(SimpleSymbol)),Term("(",QualIdentifier(Identifier(SimpleSymbol)),Term(QualIdentifier(Identifier(SimpleSymbol))),")")),")"),ModelResponse("(","define-funs-rec","(",FunctionDec("(",SimpleSymbol,"(",")",Sort(Identifier(SimpleSymbol)),")"),")","(",Term(QualIdentifier(Identifier(SimpleSymbol))),")",")"),")"))))
+
+# get-info {"top":"Responses"}
+
+(:name "z3" :version "4.13.0" :authors "LdM, NB" :error-behavior continued-execution :reason-unknown memout :assertion-stack-levels 0)
+(:reason-unknown (timeout 10))
+(:reason-unknown incomplete)
+(:all-statistics (:time 0.01 :memory 0.2))
+
+==>
+
+Responses(GeneralResponse(SpecificSuccessResponse(GetInfoResponse("(",InfoResponse(":name",String),InfoResponse(":version",String),InfoResponse(":authors",String),InfoResponse(":error-behavior",ErrorBehavior("continued-execution")),InfoResponse(":reason-unknown",ReasonUnknown(memout)),InfoResponse(":assertion-stack-levels",Numeral),")"))),GeneralResponse(SpecificSuccessResponse(GetInfoResponse("(",InfoResponse(":reason-unknown",ReasonUnknown(List("(",SimpleSymbol,Numeral,")"))),")"))),GeneralResponse(SpecificSuccessResponse(GetInfoResponse("(",InfoResponse(":reason-unknown",ReasonUnknown(incomplete)),")"))),GeneralResponse(SpecificSuccessResponse(GetInfoResponse("(",InfoResponse(Attribute(Keyword,AttributeValue("(",Keyword,Decimal,Keyword,Decimal,")"))),")"))))
+
+# get-unsat-core {"top":"Responses"}
+
+(a1 a2 |a 3|)
+
+==>
+
+Responses(GeneralResponse(SpecificSuccessResponse(GetUnsatCoreResponse("(",SimpleSymbol,SimpleSymbol,QuotedSymbol,")"))))
+
+# get-assertions and get-unsat-assumptions {"top":"Responses"}
+
+((> x 0) (not p))
+
+==>
+
+Responses(GeneralResponse(SpecificSuccessResponse(GetAssertionsResponse("(",Term("(",QualIdentifier(Identifier(SimpleSymbol)),Term(QualIdentifier(Identifier(SimpleSymbol))),Term(Numeral),")"),Term("(",QualIdentifier(Identifier(SimpleSymbol)),Term(QualIdentifier(Identifier(SimpleSymbol))),")"),")"))))
+
+# Anything else is a get-option response, or failing that a get-proof response {"top":"Responses"}
+
+true 42 (proof (step 1 :rule resolution))
+
+==>
+
+Responses(GeneralResponse(SpecificSuccessResponse(GetOptionResponse(AttributeValue(SimpleSymbol)))),GeneralResponse(SpecificSuccessResponse(GetOptionResponse(AttributeValue(Numeral)))),GeneralResponse(SpecificSuccessResponse(GetOptionResponse(AttributeValue("(",SimpleSymbol,List("(",SimpleSymbol,Numeral,Keyword,SimpleSymbol,")"),")")))))
+
+# Abstract values, qualified with as {"top":"Responses"}
+
+((v (as @a0 (Array Bool Real))))
+(((hd (as @s1 (Seq Int))) 4) ((tl (as @s1 (Seq Int))) (as seq.empty (Seq Int))))
+
+==>
+
+Responses(GeneralResponse(SpecificSuccessResponse(GetValueResponse("(",ValuationPair("(",Term(QualIdentifier(Identifier(SimpleSymbol))),Term(QualIdentifier("(",as,Identifier(SimpleSymbol),Sort("(",Identifier(SimpleSymbol),Sort(Identifier(SimpleSymbol)),Sort(Identifier(SimpleSymbol)),")"),")")),")"),")"))),GeneralResponse(SpecificSuccessResponse(GetValueResponse("(",ValuationPair("(",Term("(",QualIdentifier(Identifier(SimpleSymbol)),Term(QualIdentifier("(",as,Identifier(SimpleSymbol),Sort("(",Identifier(SimpleSymbol),Sort(Identifier(SimpleSymbol)),")"),")")),")"),Term(Numeral),")"),ValuationPair("(",Term("(",QualIdentifier(Identifier(SimpleSymbol)),Term(QualIdentifier("(",as,Identifier(SimpleSymbol),Sort("(",Identifier(SimpleSymbol),Sort(Identifier(SimpleSymbol)),")"),")")),")"),Term(QualIdentifier("(",as,Identifier(SimpleSymbol),Sort("(",Identifier(SimpleSymbol),Sort(Identifier(SimpleSymbol)),")"),")")),")"),")"))))
+
+# A keyword alone is only a get-proof response {"top":"Responses"}
+
+:all-statistics
+
+==>
+
+Responses(GeneralResponse(SpecificSuccessResponse(GetProofResponse(Keyword))))

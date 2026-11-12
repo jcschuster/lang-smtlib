@@ -1,0 +1,117 @@
+# assert, check-sat, check-sat-assuming
+
+(assert p) (check-sat) (check-sat-assuming (p (not q)))
+
+==>
+
+Script(Command("(",assert,Term(QualIdentifier(Identifier(SimpleSymbol))),")"),Command("(","check-sat",")"),Command("(","check-sat-assuming","(",Term(QualIdentifier(Identifier(SimpleSymbol))),Term("(",QualIdentifier(Identifier(SimpleSymbol)),Term(QualIdentifier(Identifier(SimpleSymbol))),")"),")",")"))
+
+# declare-const, declare-fun, declare-sort, declare-sort-parameter
+
+(declare-const x Int) (declare-fun f (Int (Array Int Bool)) Real) (declare-sort S 0) (declare-sort-parameter X)
+
+==>
+
+Script(Command("(","declare-const",SimpleSymbol,Sort(Identifier(SimpleSymbol)),")"),Command("(","declare-fun",SimpleSymbol,"(",Sort(Identifier(SimpleSymbol)),Sort("(",Identifier(SimpleSymbol),Sort(Identifier(SimpleSymbol)),Sort(Identifier(SimpleSymbol)),")"),")",Sort(Identifier(SimpleSymbol)),")"),Command("(","declare-sort",SimpleSymbol,Numeral,")"),Command("(","declare-sort-parameter",SimpleSymbol,")"))
+
+# declare-datatype, monomorphic and parametric
+
+(declare-datatype Color ((red) (green)))
+(declare-datatype Pair (par (X Y) ((pair (first X) (second Y)))))
+
+==>
+
+Script(Command("(","declare-datatype",SimpleSymbol,DatatypeDec("(",ConstructorDec("(",SimpleSymbol,")"),ConstructorDec("(",SimpleSymbol,")"),")"),")"),Command("(","declare-datatype",SimpleSymbol,DatatypeDec("(",par,"(",SimpleSymbol,SimpleSymbol,")","(",ConstructorDec("(",SimpleSymbol,SelectorDec("(",SimpleSymbol,Sort(Identifier(SimpleSymbol)),")"),SelectorDec("(",SimpleSymbol,Sort(Identifier(SimpleSymbol)),")"),")"),")",")"),")"))
+
+# declare-datatypes
+
+(declare-datatypes ((Tree 1) (TreeList 1))
+  ((par (X) ((node (value X) (children (TreeList X)))))
+   (par (Y) ((empty) (insert (head (Tree Y)) (tail (TreeList Y)))))))
+
+==>
+
+Script(Command("(","declare-datatypes","(",SortDec("(",SimpleSymbol,Numeral,")"),SortDec("(",SimpleSymbol,Numeral,")"),")","(",DatatypeDec("(",par,"(",SimpleSymbol,")","(",ConstructorDec("(",SimpleSymbol,SelectorDec("(",SimpleSymbol,Sort(Identifier(SimpleSymbol)),")"),SelectorDec("(",SimpleSymbol,Sort("(",Identifier(SimpleSymbol),Sort(Identifier(SimpleSymbol)),")"),")"),")"),")",")"),DatatypeDec("(",par,"(",SimpleSymbol,")","(",ConstructorDec("(",SimpleSymbol,")"),ConstructorDec("(",SimpleSymbol,SelectorDec("(",SimpleSymbol,Sort("(",Identifier(SimpleSymbol),Sort(Identifier(SimpleSymbol)),")"),")"),SelectorDec("(",SimpleSymbol,Sort("(",Identifier(SimpleSymbol),Sort(Identifier(SimpleSymbol)),")"),")"),")"),")",")"),")",")"))
+
+# define-const, define-fun, define-fun-rec, define-funs-rec
+
+(define-const c Int 0)
+(define-fun f ((x Int) (y Int)) Int (+ x y))
+(define-fun-rec g ((n Int)) Int (g n))
+(define-funs-rec ((h ((x Int)) Int) (k () Bool)) ((h x) true))
+
+==>
+
+Script(Command("(","define-const",SimpleSymbol,Sort(Identifier(SimpleSymbol)),Term(Numeral),")"),Command("(","define-fun",FunctionDef(SimpleSymbol,"(",SortedVar("(",SimpleSymbol,Sort(Identifier(SimpleSymbol)),")"),SortedVar("(",SimpleSymbol,Sort(Identifier(SimpleSymbol)),")"),")",Sort(Identifier(SimpleSymbol)),Term("(",QualIdentifier(Identifier(SimpleSymbol)),Term(QualIdentifier(Identifier(SimpleSymbol))),Term(QualIdentifier(Identifier(SimpleSymbol))),")")),")"),Command("(","define-fun-rec",FunctionDef(SimpleSymbol,"(",SortedVar("(",SimpleSymbol,Sort(Identifier(SimpleSymbol)),")"),")",Sort(Identifier(SimpleSymbol)),Term("(",QualIdentifier(Identifier(SimpleSymbol)),Term(QualIdentifier(Identifier(SimpleSymbol))),")")),")"),Command("(","define-funs-rec","(",FunctionDec("(",SimpleSymbol,"(",SortedVar("(",SimpleSymbol,Sort(Identifier(SimpleSymbol)),")"),")",Sort(Identifier(SimpleSymbol)),")"),FunctionDec("(",SimpleSymbol,"(",")",Sort(Identifier(SimpleSymbol)),")"),")","(",Term("(",QualIdentifier(Identifier(SimpleSymbol)),Term(QualIdentifier(Identifier(SimpleSymbol))),")"),Term(QualIdentifier(Identifier(SimpleSymbol))),")",")"))
+
+# define-sort
+
+(define-sort Set (T) (Array T Bool))
+
+==>
+
+Script(Command("(","define-sort",SimpleSymbol,"(",SimpleSymbol,")",Sort("(",Identifier(SimpleSymbol),Sort(Identifier(SimpleSymbol)),Sort(Identifier(SimpleSymbol)),")"),")"))
+
+# echo, exit, get-*
+
+(echo "hi") (exit) (get-assertions) (get-assignment) (get-info :name) (get-model) (get-option :produce-models) (get-proof) (get-unsat-assumptions) (get-unsat-core) (get-value (x (f x)))
+
+==>
+
+Script(Command("(",echo,String,")"),Command("(",exit,")"),Command("(","get-assertions",")"),Command("(","get-assignment",")"),Command("(","get-info",InfoFlag(":name"),")"),Command("(","get-model",")"),Command("(","get-option",Keyword,")"),Command("(","get-proof",")"),Command("(","get-unsat-assumptions",")"),Command("(","get-unsat-core",")"),Command("(","get-value","(",Term(QualIdentifier(Identifier(SimpleSymbol))),Term("(",QualIdentifier(Identifier(SimpleSymbol)),Term(QualIdentifier(Identifier(SimpleSymbol))),")"),")",")"))
+
+# pop, push, reset, reset-assertions
+
+(push 1) (pop 2) (reset) (reset-assertions)
+
+==>
+
+Script(Command("(",push,Numeral,")"),Command("(",pop,Numeral,")"),Command("(",reset,")"),Command("(","reset-assertions",")"))
+
+# set-info, set-logic, set-option
+
+(set-info :smt-lib-version 2.7) (set-logic QF_LIA) (set-option :produce-models true)
+
+==>
+
+Script(Command("(","set-info",Attribute(Keyword,AttributeValue(Decimal)),")"),Command("(","set-logic",SimpleSymbol,")"),Command("(","set-option",Option(":produce-models",BValue(true)),")"))
+
+# Predefined option and info names, and the attribute fallback
+
+(set-option :random-seed 7) (set-option :regular-output-channel "out") (set-option :print-success 1) (get-info :all-statistics) (get-info :time)
+
+==>
+
+Script(Command("(","set-option",Option(":random-seed",Numeral),")"),Command("(","set-option",Option(":regular-output-channel",String),")"),Command("(","set-option",Option(Attribute(Keyword,AttributeValue(Numeral))),")"),Command("(","get-info",InfoFlag(":all-statistics"),")"),Command("(","get-info",InfoFlag(Keyword),")"))
+
+# Generic command for what the standard does not define
+
+(check-sat-using (then simplify smt) :print_model true) (minimize (+ x y)) (|declare-const| x Int)
+
+==>
+
+Script(GenericCommand("(",SimpleSymbol,List("(",SimpleSymbol,SimpleSymbol,SimpleSymbol,")"),Keyword,SimpleSymbol,")"),GenericCommand("(",SimpleSymbol,List("(",SimpleSymbol,SimpleSymbol,SimpleSymbol,")"),")"),GenericCommand("(",QuotedSymbol,SimpleSymbol,SimpleSymbol,")"))
+
+# Every predefined option
+
+(set-option :diagnostic-output-channel "stderr") (set-option :global-declarations false) (set-option :interactive-mode false) (set-option :print-success false) (set-option :produce-assertions true) (set-option :produce-assignments true) (set-option :produce-proofs true) (set-option :produce-unsat-assumptions true) (set-option :produce-unsat-cores true) (set-option :reproducible-resource-limit 0) (set-option :verbosity 2)
+
+==>
+
+Script(Command("(","set-option",Option(":diagnostic-output-channel",String),")"),Command("(","set-option",Option(":global-declarations",BValue(false)),")"),Command("(","set-option",Option(":interactive-mode",BValue(false)),")"),Command("(","set-option",Option(":print-success",BValue(false)),")"),Command("(","set-option",Option(":produce-assertions",BValue(true)),")"),Command("(","set-option",Option(":produce-assignments",BValue(true)),")"),Command("(","set-option",Option(":produce-proofs",BValue(true)),")"),Command("(","set-option",Option(":produce-unsat-assumptions",BValue(true)),")"),Command("(","set-option",Option(":produce-unsat-cores",BValue(true)),")"),Command("(","set-option",Option(":reproducible-resource-limit",Numeral),")"),Command("(","set-option",Option(":verbosity",Numeral),")"))
+
+# push and pop without a numeral (deviation)
+
+(push) (pop) (push 2) (pop 2)
+
+==>
+
+Script(Command("(",push,")"),Command("(",pop,")"),Command("(",push,Numeral,")"),Command("(",pop,Numeral,")"))
+
+# push and pop take a numeral or nothing
+
+(push x) (pop "1") (push 1 2)
+
+==>
+
+Script(Command("(",push,⚠(SimpleSymbol),")"),Command("(",pop,⚠(String),")"),Command("(",push,Numeral,⚠(Numeral),")"))

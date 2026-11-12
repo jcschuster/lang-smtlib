@@ -1,0 +1,8 @@
+title:    The SMT-LIB Standard, Version 2.7
+authors:  Clark Barrett, Pascal Fontaine, Cesare Tinelli
+release:  2026-09-09
+url:      https://smt-lib.org/papers/smt-lib-reference-v2.7-r2026-09-09.pdf
+sha256:   c01167d7eb9241a02ceb8c93cd37e4854cb8a38529157e0b72b1cdc8ecb4a8fc
+listed:   https://smt-lib.org/language.shtml ("Latest official release of Version 2.7")
+fetched:  2026-11-12
+used:     Appendix B "Concrete Syntax" (pages 103-109); Section 3.1 "Lexicon"
