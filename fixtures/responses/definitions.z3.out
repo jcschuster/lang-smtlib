@@ -1,0 +1,5 @@
+sat
+((! (= (fact 3) 6) :named f3)
+ (! (ev 4) :named e4)
+ (not (select empty (+ k zero))))
+((f3 true) (e4 true))

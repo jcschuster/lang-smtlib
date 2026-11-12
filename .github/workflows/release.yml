@@ -1,0 +1,109 @@
+name: release
+
+# Publishes the version in the package (see .github/scripts/version.sh) to npm, and creates
+# its GitHub release and tag v<version>, when a pull request labelled `release` is merged
+# into main. The release notes are that version's CHANGELOG section as merged.
+#
+# To release: run `.github/scripts/version.sh X.Y.Z`, add a `## [X.Y.Z] - date` section to
+# CHANGELOG.md, open a pull request, and label it `release`.
+#
+# npm authenticates this workflow through trusted publishing (OIDC): the package has a
+# trusted publisher on npmjs.com for jcschuster/lang-smtlib, workflow release.yml, with
+# `npm publish` allowed. An NPM_TOKEN secret, if set, is only a fallback. Run
+# workflow_dispatch to retry a release that failed part-way: a version already on npm is
+# skipped.
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.pull_request.merged && contains(github.event.pull_request.labels.*.name, 'release'))
+    runs-on: ubuntu-latest
+    env:
+      REF: ${{ github.event.pull_request.merge_commit_sha || github.sha }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ env.REF }}
+
+      - uses: cachix/install-nix-action@v31
+
+      - name: Read the version, and refuse one already released
+        id: version
+        run: |
+          version=$(nix develop --command .github/scripts/version.sh)
+          if git ls-remote --exit-code --tags origin "refs/tags/v$version"; then
+            echo "::error::v$version is already tagged"
+            exit 1
+          fi
+          awk -v heading="## [$version] " '
+            index($0, heading) == 1 { on = 1; next }
+            /^## \[/ { on = 0 }
+            on' CHANGELOG.md > "$RUNNER_TEMP/notes.md"
+          if ! grep -q '[^[:space:]]' "$RUNNER_TEMP/notes.md"; then
+            echo "::error::CHANGELOG.md has no section for $version"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Test what is about to be published
+        run: nix develop --command .github/scripts/test-all.sh
+
+      - name: Publish to npm
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: ${{ !github.event.repository.private }}
+        run: |
+          nix develop --command bash -euo pipefail -c '
+            if [ -n "$NPM_TOKEN" ]; then
+              printf "//registry.npmjs.org/:_authToken=%s\n" "$NPM_TOKEN" > "$RUNNER_TEMP/.npmrc"
+              export NPM_CONFIG_USERCONFIG="$RUNNER_TEMP/.npmrc"
+            fi
+            package=codemirror-lang-smtlib
+            # Asked from outside the workspace, whose devEngines npm would refuse.
+            if (cd "$RUNNER_TEMP" && npm view "$package@$VERSION" version) >/dev/null 2>&1; then
+              echo "$package@$VERSION is already on npm"
+            else
+              (cd "packages/$package" && npm publish --access public)
+            fi
+
+            # npm can accept a publish and still hold the version back, for review or as
+            # a staged version. Say so, rather than report a release nobody can install yet.
+            live=false
+            for _ in $(seq 12); do
+              if (cd "$RUNNER_TEMP" && npm view --prefer-online "$package@$VERSION" version) >/dev/null 2>&1; then
+                live=true
+                break
+              fi
+              sleep 10
+            done
+            if [ "$live" = true ]; then
+              echo "- \`$package@$VERSION\` is live on npm" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "::warning::$package@$VERSION is not on npm two minutes after publishing. npm may be holding it for review or as a staged version: see https://www.npmjs.com/package/$package and approve it under Staged Packages if asked."
+              echo "- \`$package@$VERSION\` is **not live yet**: check npmjs.com, Staged Packages" >> "$GITHUB_STEP_SUMMARY"
+            fi
+          '
+
+      - name: Create the GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          gh release create "v$VERSION" --target "$REF" \
+            --title "v$VERSION" --notes-file "$RUNNER_TEMP/notes.md"

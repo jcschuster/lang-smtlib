@@ -1,0 +1,185 @@
+# SMT-LIB 2.7 concrete syntax, written from Appendix B of The SMT-LIB Standard,
+# Version 2.7, release 2026-09-09 (see SOURCE). One production
+# per Appendix B production, with its name and in its order. Notation: README.md.
+# The token classes and word lists are in smtlib-2.7.lex.
+
+# S-expressions
+
+<spec_constant> ::= <numeral> | <decimal> | <hexadecimal> | <binary> | <string>
+<s_expr> ::= <spec_constant> | <symbol> | <reserved> | <keyword>
+           | "(" <s_expr>* ")"
+
+# Identifiers
+
+# Deviation, decided by Johannes 2026-11-12: <hexadecimal> added, for (_ char #x41) of
+# the official Strings theory, whose notes call hexadecimal indices an extension of the
+# standard. README.md, "Discrepancies", 9.
+<index> ::= <numeral> | <symbol> | <hexadecimal>
+<identifier> ::= <symbol> | "(" "_" <symbol> <index>+ ")"
+
+# Sorts
+
+<sort> ::= <identifier> | "(" <identifier> <sort>+ ")"
+
+# Attributes
+
+<attribute_value> ::= <spec_constant> | <symbol> | "(" <s_expr>* ")"
+<attribute> ::= <keyword> | <keyword> <attribute_value>
+
+# Terms
+
+<qual_identifier> ::= <identifier> | "(" "as" <identifier> <sort> ")"
+<var_binding> ::= "(" <symbol> <term> ")"
+<sorted_var> ::= "(" <symbol> <sort> ")"
+<symbol_> ::= <symbol> | "_"
+<pattern> ::= <symbol_> | "(" <symbol> <symbol_>+ ")"
+<match_case> ::= "(" <pattern> <term> ")"
+<term> ::= <spec_constant>
+         | <qual_identifier>
+         | "(" <qual_identifier> <term>+ ")"
+         | "(" "let" "(" <var_binding>+ ")" <term> ")"
+         | "(" "lambda" "(" <sorted_var>+ ")" <term> ")"
+         | "(" "forall" "(" <sorted_var>+ ")" <term> ")"
+         | "(" "exists" "(" <sorted_var>+ ")" <term> ")"
+         | "(" "match" <term> "(" <match_case>+ ")" ")"
+         | "(" "!" <term> <attribute>+ ")"
+
+# Theories
+
+<sort_symbol_decl> ::= "(" <identifier> <numeral> <attribute>* ")"
+<meta_spec_constant> ::= "NUMERAL" | "DECIMAL" | "STRING"
+<fun_symbol_decl> ::= "(" <spec_constant> <sort> <attribute>* ")"
+                    | "(" <meta_spec_constant> <sort> <attribute>* ")"
+                    | "(" <identifier> <sort>+ <attribute>* ")"
+<par_fun_symbol_decl> ::= <fun_symbol_decl>
+                        | "(" "par" "(" <symbol>+ ")" "(" <identifier> <sort>+ <attribute>* ")" ")"
+<theory_attribute> ::= ":sorts" "(" <sort_symbol_decl>+ ")"
+                     | ":funs" "(" <par_fun_symbol_decl>+ ")"
+                     | ":sorts-description" <string>
+                     | ":funs-description" <string>
+                     | ":definition" <string>
+                     | ":values" <string>
+                     | ":notes" <string>
+                     | <attribute>
+<theory_decl> ::= "(" "theory" <symbol> <theory_attribute>+ ")"
+
+# Logics
+
+# Deviation in notation: Appendix B writes this production with ":=" instead of "::=".
+# README.md, "Discrepancies", 2.
+<logic_attribute> ::= ":theories" "(" <symbol>+ ")"
+                    | ":language" <string>
+                    | ":extensions" <string>
+                    | ":values" <string>
+                    | ":notes" <string>
+                    | <attribute>
+<logic> ::= "(" "logic" <symbol> <logic_attribute>+ ")"
+
+# Info flags
+
+<info_flag> ::= ":all-statistics" | ":assertion-stack-levels" | ":authors"
+              | ":error-behavior" | ":name" | ":reason-unknown"
+              | ":version" | <keyword>
+
+# Command options
+
+<b_value> ::= "true" | "false"
+<option> ::= ":diagnostic-output-channel" <string>
+           | ":global-declarations" <b_value>
+           | ":interactive-mode" <b_value>
+           | ":print-success" <b_value>
+           | ":produce-assertions" <b_value>
+           | ":produce-assignments" <b_value>
+           | ":produce-models" <b_value>
+           | ":produce-proofs" <b_value>
+           | ":produce-unsat-assumptions" <b_value>
+           | ":produce-unsat-cores" <b_value>
+           | ":random-seed" <numeral>
+           | ":regular-output-channel" <string>
+           | ":reproducible-resource-limit" <numeral>
+           | ":verbosity" <numeral>
+           | <attribute>
+
+# Commands
+
+<sort_dec> ::= "(" <symbol> <numeral> ")"
+<selector_dec> ::= "(" <symbol> <sort> ")"
+<constructor_dec> ::= "(" <symbol> <selector_dec>* ")"
+<datatype_dec> ::= "(" <constructor_dec>+ ")" | "(" "par" "(" <symbol>+ ")" "(" <constructor_dec>+ ")" ")"
+<function_dec> ::= "(" <symbol> "(" <sorted_var>* ")" <sort> ")"
+<function_def> ::= <symbol> "(" <sorted_var>* ")" <sort> <term>
+<command> ::= "(" "assert" <term> ")"
+            | "(" "check-sat" ")"
+            | "(" "check-sat-assuming" "(" <term>* ")" ")"
+            | "(" "declare-const" <symbol> <sort> ")"
+            | "(" "declare-datatype" <symbol> <datatype_dec> ")"
+            | "(" "declare-datatypes" "(" <sort_dec>^n+1 ")" "(" <datatype_dec>^n+1 ")" ")"
+            | "(" "declare-fun" <symbol> "(" <sort>* ")" <sort> ")"
+            | "(" "declare-sort" <symbol> <numeral> ")"
+            | "(" "declare-sort-parameter" <symbol> ")"
+            | "(" "define-const" <symbol> <sort> <term> ")"
+            | "(" "define-fun" <function_def> ")"
+            | "(" "define-fun-rec" <function_def> ")"
+            | "(" "define-funs-rec" "(" <function_dec>^n+1 ")" "(" <term>^n+1 ")" ")"
+            | "(" "define-sort" <symbol> "(" <symbol>* ")" <sort> ")"
+            | "(" "echo" <string> ")"
+            | "(" "exit" ")"
+            | "(" "get-assertions" ")"
+            | "(" "get-assignment" ")"
+            | "(" "get-info" <info_flag> ")"
+            | "(" "get-model" ")"
+            | "(" "get-option" <keyword> ")"
+            | "(" "get-proof" ")"
+            | "(" "get-unsat-assumptions" ")"
+            | "(" "get-unsat-core" ")"
+            | "(" "get-value" "(" <term>+ ")" ")"
+            | "(" "pop" <numeral> ")"
+            | "(" "push" <numeral> ")"
+            # Deviation, decided by Johannes 2026-11-12: (pop) and (push) without a numeral,
+            # which z3 and cvc5 read as (pop 1) and (push 1). README.md, "Discrepancies", 10.
+            | "(" "pop" ")"
+            | "(" "push" ")"
+            | "(" "reset" ")"
+            | "(" "reset-assertions" ")"
+            | "(" "set-info" <attribute> ")"
+            | "(" "set-logic" <symbol> ")"
+            | "(" "set-option" <option> ")"
+<script> ::= <command>*
+
+# Command responses
+
+<error-behavior> ::= "immediate-exit" | "continued-execution"
+<reason-unknown> ::= "memout" | "incomplete" | <s_expr>
+<model_response> ::= "(" "define-fun" <function_def> ")" | "(" "define-fun-rec" <function_def> ")"
+                   | "(" "define-funs-rec" "(" <function_dec>^n+1 ")" "(" <term>^n+1 ")" ")"
+<info_response> ::= ":assertion-stack-levels" <numeral>
+                  | ":authors" <string>
+                  | ":error-behavior" <error-behavior>
+                  | ":name" <string>
+                  | ":reason-unknown" <reason-unknown>
+                  | ":version" <string>
+                  | <attribute>
+<valuation_pair> ::= "(" <term> <term> ")"
+<t_valuation_pair> ::= "(" <symbol> <b_value> ")"
+<check_sat_response> ::= "sat" | "unsat" | "unknown"
+<echo_response> ::= <string>
+<get_assertions_response> ::= "(" <term>* ")"
+<get_assignment_response> ::= "(" <t_valuation_pair>* ")"
+<get_info_response> ::= "(" <info_response>+ ")"
+<get_model_response> ::= "(" <model_response>* ")"
+<get_option_response> ::= <attribute_value>
+<get_proof_response> ::= <s_expr>
+# Deviation, decided by Johannes 2026-11-12: Appendix B refers to this production as
+# <get_unsat_assumptions_response> in <specific_success_response>; the short name is
+# used there too. README.md, "Discrepancies", 1.
+<get_unsat_assump_response> ::= "(" <term>* ")"
+<get_unsat_core_response> ::= "(" <symbol>* ")"
+<get_value_response> ::= "(" <valuation_pair>+ ")"
+<specific_success_response> ::= <check_sat_response> | <echo_response>
+                              | <get_assertions_response> | <get_assignment_response>
+                              | <get_info_response> | <get_model_response>
+                              | <get_option_response> | <get_proof_response>
+                              | <get_unsat_assump_response>
+                              | <get_unsat_core_response> | <get_value_response>
+<general_response> ::= "success" | <specific_success_response>
+                     | "unsupported" | "(" "error" <string> ")"

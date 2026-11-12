@@ -1,0 +1,11 @@
+unknown
+(
+(= zero 0)
+(forall ((n Int)) (= (fact n) (ite (<= n 0) 1 (* n (fact (- n 1))))))
+(forall ((n Int)) (= (ev n) (ite (= n 0) true (od (- n 1)))))
+(forall ((n Int)) (= (od n) (ite (= n 0) false (ev (- n 1)))))
+(= (fact 3) 6)
+(ev 4)
+(not (select empty (+ k zero)))
+)
+((f3 true) (e4 true))

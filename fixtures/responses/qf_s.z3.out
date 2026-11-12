@@ -1,0 +1,3 @@
+sat
+((s "say ""hi""")
+ (t "there"))

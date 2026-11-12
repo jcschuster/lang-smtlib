@@ -1,4 +1,6 @@
 {
+  description = "lang-smtlib: editor language support for SMT-LIB 2.7";
+
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
   outputs = { nixpkgs, ... }:
     let
@@ -7,7 +9,14 @@
     in {
       devShells = forAll (pkgs: {
         default = pkgs.mkShell {
-          packages = with pkgs; [ nodejs pnpm swi-prolog ];
+          packages = with pkgs; [
+            nodejs_26
+            pnpm
+            jq # .github/scripts/version.sh
+            z3 # .github/scripts/check-fixtures.sh
+            cvc5
+            poppler-utils # pdftotext, to read a new reference (spec/README.md)
+          ];
         };
       });
     };

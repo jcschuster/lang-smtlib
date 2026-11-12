@@ -1,0 +1,34 @@
+# An unbalanced command does not swallow the next one
+
+(assert (and p q)
+(check-sat)
+
+==>
+
+Script(Command("(",assert,Term("(",QualIdentifier(Identifier(SimpleSymbol)),Term(QualIdentifier(Identifier(SimpleSymbol))),Term(QualIdentifier(Identifier(SimpleSymbol))),")"),⚠),Command("(","check-sat",")"))
+
+# A missing argument
+
+(declare-fun f () )
+(check-sat)
+
+==>
+
+Script(Command("(","declare-fun",SimpleSymbol,"(",")",Sort(Identifier(⚠)),")"),Command("(","check-sat",")"))
+
+# An extra closing paren
+
+(assert p))
+(check-sat)
+
+==>
+
+Script(Command("(",assert,Term(QualIdentifier(Identifier(SimpleSymbol))),")"),⚠(")"),Command("(","check-sat",")"))
+
+# Unterminated string
+
+(echo "abc
+
+==>
+
+Script(Command("(",echo,⚠,⚠(SimpleSymbol)))

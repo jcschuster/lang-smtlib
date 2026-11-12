@@ -1,0 +1,6 @@
+sat
+((a #b00010011) (b #b11111101) ((low b) #b1101))
+(
+(define-fun a () (_ BitVec 8) #b00010011)
+(define-fun b () (_ BitVec 8) #b11111101)
+)

@@ -1,0 +1,40 @@
+# Theory declaration {"top":"TheoryFile"}
+
+(theory Ints
+ :smt-lib-version 2.7
+ :sorts ((Int 0))
+ :funs ((NUMERAL Int) (- Int Int) (+ Int Int Int :left-assoc) (< Int Int Bool :chainable))
+ :sorts-description "..."
+ :funs-description "..."
+ :definition "..."
+ :values "..."
+ :notes "..."
+ :my-attribute (a b))
+
+==>
+
+TheoryFile(TheoryDecl("(",theory,SimpleSymbol,TheoryAttribute(Attribute(Keyword,AttributeValue(Decimal))),TheoryAttribute(":sorts","(",SortSymbolDecl("(",Identifier(SimpleSymbol),Numeral,")"),")"),TheoryAttribute(":funs","(",ParFunSymbolDecl(FunSymbolDecl("(",MetaSpecConstant(NUMERAL),Sort(Identifier(SimpleSymbol)),")")),ParFunSymbolDecl(FunSymbolDecl("(",Identifier(SimpleSymbol),Sort(Identifier(SimpleSymbol)),Sort(Identifier(SimpleSymbol)),")")),ParFunSymbolDecl(FunSymbolDecl("(",Identifier(SimpleSymbol),Sort(Identifier(SimpleSymbol)),Sort(Identifier(SimpleSymbol)),Sort(Identifier(SimpleSymbol)),Attribute(Keyword),")")),ParFunSymbolDecl(FunSymbolDecl("(",Identifier(SimpleSymbol),Sort(Identifier(SimpleSymbol)),Sort(Identifier(SimpleSymbol)),Sort(Identifier(SimpleSymbol)),Attribute(Keyword),")")),")"),TheoryAttribute(":sorts-description",String),TheoryAttribute(":funs-description",String),TheoryAttribute(":definition",String),TheoryAttribute(":values",String),TheoryAttribute(":notes",String),TheoryAttribute(Attribute(Keyword,AttributeValue("(",SimpleSymbol,SimpleSymbol,")"))),")"))
+
+# Parametric function symbols and spec constants {"top":"TheoryFile"}
+
+(theory ArraysEx
+ :sorts ((Array 2))
+ :funs ((par (X Y) (select (Array X Y) X Y)) (DECIMAL Real) (STRING String) (#b0 (_ BitVec 1)) ((_ extract 0 0) Int Int)))
+
+==>
+
+TheoryFile(TheoryDecl("(",theory,SimpleSymbol,TheoryAttribute(":sorts","(",SortSymbolDecl("(",Identifier(SimpleSymbol),Numeral,")"),")"),TheoryAttribute(":funs","(",ParFunSymbolDecl("(",par,"(",SimpleSymbol,SimpleSymbol,")","(",Identifier(SimpleSymbol),Sort("(",Identifier(SimpleSymbol),Sort(Identifier(SimpleSymbol)),Sort(Identifier(SimpleSymbol)),")"),Sort(Identifier(SimpleSymbol)),Sort(Identifier(SimpleSymbol)),")",")"),ParFunSymbolDecl(FunSymbolDecl("(",MetaSpecConstant(DECIMAL),Sort(Identifier(SimpleSymbol)),")")),ParFunSymbolDecl(FunSymbolDecl("(",MetaSpecConstant(STRING),Sort(Identifier(SimpleSymbol)),")")),ParFunSymbolDecl(FunSymbolDecl("(",Binary,Sort(Identifier("(",_,SimpleSymbol,Index(Numeral),")")),")")),ParFunSymbolDecl(FunSymbolDecl("(",Identifier("(",_,SimpleSymbol,Index(Numeral),Index(Numeral),")"),Sort(Identifier(SimpleSymbol)),Sort(Identifier(SimpleSymbol)),")")),")"),")"))
+
+# Logic declaration {"top":"LogicFile"}
+
+(logic QF_LIA
+ :smt-lib-version 2.7
+ :theories (Ints)
+ :language "Closed quantifier-free formulas"
+ :extensions "none"
+ :values "numerals"
+ :notes "...")
+
+==>
+
+LogicFile(Logic("(",logic,SimpleSymbol,LogicAttribute(Attribute(Keyword,AttributeValue(Decimal))),LogicAttribute(":theories","(",SimpleSymbol,")"),LogicAttribute(":language",String),LogicAttribute(":extensions",String),LogicAttribute(":values",String),LogicAttribute(":notes",String),")"))

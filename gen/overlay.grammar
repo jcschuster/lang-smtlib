@@ -1,0 +1,39 @@
+// Hand-written part of src/smtlib.grammar. gen/bnf2lezer.mjs adds a rule per production of
+// spec/smtlib-2.7.bnf and a token per token class of spec/smtlib-2.7.lex. A @top here
+// replaces the production of its name; any other rule named like a production must repeat
+// the generated body and only adds its props. gen/CONFLICTS.md explains each entry.
+
+// <script>, plus commands outside the standard (solver extensions).
+@top Script { (Command | GenericCommand)* }
+
+@top Responses { GeneralResponse* }
+
+@top TheoryFile { TheoryDecl* }
+
+@top LogicFile { Logic* }
+
+@skip { whitespace | LineComment }
+
+GenericCommand { "(" symbol sExpr* ")" }
+
+// Preferences among readings of an ambiguous response. The generator moves these props
+// onto the generated rules.
+
+GetAssignmentResponse[@dynamicPrecedence=3] { "(" TValuationPair* ")" }
+GetValueResponse[@dynamicPrecedence=2] { "(" ValuationPair+ ")" }
+GetUnsatCoreResponse[@dynamicPrecedence=2] { "(" symbol* ")" }
+GetAssertionsResponse[@dynamicPrecedence=1] { "(" Term* ")" }
+GetOptionResponse[@dynamicPrecedence=-1] { AttributeValue }
+GetProofResponse[@dynamicPrecedence=-2] { sExpr }
+
+@tokens {
+  @precedence { Decimal, Numeral }
+
+  whitespace { whiteSpaceChar+ }
+
+  "(" ")"
+}
+
+@external propSource smtlibHighlighting from "./highlight"
+
+@detectDelim

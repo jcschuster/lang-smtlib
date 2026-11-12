@@ -1,0 +1,3 @@
+sat
+(((select m 0) 2)
+ ((select (store m i 5) i) 5))

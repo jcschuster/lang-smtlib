@@ -1,0 +1,43 @@
+name: reference
+
+# Looks every Sunday whether https://smt-lib.org/language.shtml lists an official SMT-LIB
+# reference other than the one spec/SOURCE pins, and if so opens an issue for it, once.
+# The grammar is written by hand from the reference (spec/README.md), so this workflow
+# changes nothing itself.
+
+on:
+  schedule:
+    - cron: "0 5 * * 0"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Open an issue for a new reference
+        run: |
+          latest=$(.github/scripts/latest-reference.sh)
+          pinned=$(sed -n 's/^url: *//p' spec/SOURCE)
+          if [ "$latest" = "$pinned" ]; then
+            echo "spec/SOURCE pins the latest reference, $pinned"
+            exit 0
+          fi
+          title="New SMT-LIB reference: ${latest##*/}"
+          if [ -n "$(gh issue list --state all --search "in:title \"$title\"" --json number --jq '.[].number')" ]; then
+            echo "an issue for ${latest##*/} exists"
+            exit 0
+          fi
+          {
+            echo "smt-lib.org lists $latest as the latest official release; spec/SOURCE pins $pinned."
+            echo
+            echo "To move to it: fetch the PDF, diff the text of Appendix B and Section 3.1 against the pinned release, carry each change into spec/smtlib-2.7.bnf and spec/smtlib-2.7.lex (and spec/README.md), update spec/SOURCE and the package's \"smtlib\" field, then run .github/scripts/test-all.sh."
+          } > "$RUNNER_TEMP/body.md"
+          gh issue create --title "$title" --body-file "$RUNNER_TEMP/body.md"

@@ -1,0 +1,88 @@
+# Constants and identifiers
+
+(assert (f 0 1.5 #xA0 #b01 "s" x |y z| (_ bv5 32) (_ move up)))
+
+==>
+
+Script(Command("(",assert,Term("(",QualIdentifier(Identifier(SimpleSymbol)),Term(Numeral),Term(Decimal),Term(Hexadecimal),Term(Binary),Term(String),Term(QualIdentifier(Identifier(SimpleSymbol))),Term(QualIdentifier(Identifier(QuotedSymbol))),Term(QualIdentifier(Identifier("(",_,SimpleSymbol,Index(Numeral),")"))),Term(QualIdentifier(Identifier("(",_,SimpleSymbol,Index(SimpleSymbol),")"))),")"),")"))
+
+# Qualified identifiers
+
+(assert (= (as nil (List Int)) ((as const (Array Int Int)) 0)))
+
+==>
+
+Script(Command("(",assert,Term("(",QualIdentifier(Identifier(SimpleSymbol)),Term(QualIdentifier("(",as,Identifier(SimpleSymbol),Sort("(",Identifier(SimpleSymbol),Sort(Identifier(SimpleSymbol)),")"),")")),Term("(",QualIdentifier("(",as,Identifier(SimpleSymbol),Sort("(",Identifier(SimpleSymbol),Sort(Identifier(SimpleSymbol)),Sort(Identifier(SimpleSymbol)),")"),")"),Term(Numeral),")"),")"),")"))
+
+# Indexed function application
+
+(assert (= ((_ extract 7 4) x) ((_ zero_extend 8) y)))
+
+==>
+
+Script(Command("(",assert,Term("(",QualIdentifier(Identifier(SimpleSymbol)),Term("(",QualIdentifier(Identifier("(",_,SimpleSymbol,Index(Numeral),Index(Numeral),")")),Term(QualIdentifier(Identifier(SimpleSymbol))),")"),Term("(",QualIdentifier(Identifier("(",_,SimpleSymbol,Index(Numeral),")")),Term(QualIdentifier(Identifier(SimpleSymbol))),")"),")"),")"))
+
+# let, forall, exists
+
+(assert (let ((a 1) (b (+ x 1))) (forall ((y Int) (z Real)) (exists ((w Bool)) (=> w (< a b))))))
+
+==>
+
+Script(Command("(",assert,Term("(",let,"(",VarBinding("(",SimpleSymbol,Term(Numeral),")"),VarBinding("(",SimpleSymbol,Term("(",QualIdentifier(Identifier(SimpleSymbol)),Term(QualIdentifier(Identifier(SimpleSymbol))),Term(Numeral),")"),")"),")",Term("(",forall,"(",SortedVar("(",SimpleSymbol,Sort(Identifier(SimpleSymbol)),")"),SortedVar("(",SimpleSymbol,Sort(Identifier(SimpleSymbol)),")"),")",Term("(",exists,"(",SortedVar("(",SimpleSymbol,Sort(Identifier(SimpleSymbol)),")"),")",Term("(",QualIdentifier(Identifier(SimpleSymbol)),Term(QualIdentifier(Identifier(SimpleSymbol))),Term("(",QualIdentifier(Identifier(SimpleSymbol)),Term(QualIdentifier(Identifier(SimpleSymbol))),Term(QualIdentifier(Identifier(SimpleSymbol))),")"),")"),")"),")"),")"),")"))
+
+# lambda and application with @ (2.7)
+
+(define-const inc (-> Int Int) (lambda ((x Int)) (+ x 1)))
+(assert (= (@ inc 1) 2))
+
+==>
+
+Script(Command("(","define-const",SimpleSymbol,Sort("(",Identifier(SimpleSymbol),Sort(Identifier(SimpleSymbol)),Sort(Identifier(SimpleSymbol)),")"),Term("(",lambda,"(",SortedVar("(",SimpleSymbol,Sort(Identifier(SimpleSymbol)),")"),")",Term("(",QualIdentifier(Identifier(SimpleSymbol)),Term(QualIdentifier(Identifier(SimpleSymbol))),Term(Numeral),")"),")"),")"),Command("(",assert,Term("(",QualIdentifier(Identifier(SimpleSymbol)),Term("(",QualIdentifier(Identifier(SimpleSymbol)),Term(QualIdentifier(Identifier(SimpleSymbol))),Term(Numeral),")"),Term(Numeral),")"),")"))
+
+# match with constructor patterns and the _ wildcard (2.7)
+
+(assert (match l ((nil 0) ((cons h _) h) (x 1) (_ 2))))
+
+==>
+
+Script(Command("(",assert,Term("(",match,Term(QualIdentifier(Identifier(SimpleSymbol))),"(",MatchCase("(",Pattern(SimpleSymbol),Term(Numeral),")"),MatchCase("(",Pattern("(",SimpleSymbol,SimpleSymbol,_,")"),Term(QualIdentifier(Identifier(SimpleSymbol))),")"),MatchCase("(",Pattern(SimpleSymbol),Term(Numeral),")"),MatchCase("(",Pattern(_),Term(Numeral),")"),")",")"),")"))
+
+# Annotations
+
+(assert (! (> x 0) :named pos :pattern ((f x) (g x)) :weight 3))
+
+==>
+
+Script(Command("(",assert,Term("(","!",Term("(",QualIdentifier(Identifier(SimpleSymbol)),Term(QualIdentifier(Identifier(SimpleSymbol))),Term(Numeral),")"),Attribute(Keyword,AttributeValue(SimpleSymbol)),Attribute(Keyword,AttributeValue("(",List("(",SimpleSymbol,SimpleSymbol,")"),List("(",SimpleSymbol,SimpleSymbol,")"),")")),Attribute(Keyword,AttributeValue(Numeral)),")"),")"))
+
+# Attribute values: constants, symbols, s-expressions with reserved words
+
+(set-info :notes (assert (let) :k #b1 "s" BINARY HEXADECIMAL)) (set-info :status sat) (set-info :flag)
+
+==>
+
+Script(Command("(","set-info",Attribute(Keyword,AttributeValue("(",assert,List("(",let,")"),Keyword,Binary,String,BINARY,HEXADECIMAL,")")),")"),Command("(","set-info",Attribute(Keyword,AttributeValue(SimpleSymbol)),")"),Command("(","set-info",Attribute(Keyword),")"))
+
+# Sorts: indexed and parametric
+
+(declare-fun f ((_ BitVec 32) (Array (_ BitVec 4) (List Real)) (_ FloatingPoint 11 53)) RoundingMode)
+
+==>
+
+Script(Command("(","declare-fun",SimpleSymbol,"(",Sort(Identifier("(",_,SimpleSymbol,Index(Numeral),")")),Sort("(",Identifier(SimpleSymbol),Sort(Identifier("(",_,SimpleSymbol,Index(Numeral),")")),Sort("(",Identifier(SimpleSymbol),Sort(Identifier(SimpleSymbol)),")"),")"),Sort(Identifier("(",_,SimpleSymbol,Index(Numeral),Index(Numeral),")")),")",Sort(Identifier(SimpleSymbol)),")"))
+
+# Hexadecimal index, as in the Strings theory (deviation)
+
+(assert (= (str.++ (_ char #x41) (_ char #x1F600)) "A😀"))
+
+==>
+
+Script(Command("(",assert,Term("(",QualIdentifier(Identifier(SimpleSymbol)),Term("(",QualIdentifier(Identifier(SimpleSymbol)),Term(QualIdentifier(Identifier("(",_,SimpleSymbol,Index(Hexadecimal),")"))),Term(QualIdentifier(Identifier("(",_,SimpleSymbol,Index(Hexadecimal),")"))),")"),Term(String),")"),")"))
+
+# Indices are numerals, symbols or hexadecimals only
+
+(assert (= (_ char #b01) (_ char 1.5) (_ char "A") (_ f :k)))
+
+==>
+
+Script(Command("(",assert,Term("(",QualIdentifier(Identifier(SimpleSymbol)),Term(QualIdentifier(Identifier("(",_,SimpleSymbol,⚠(Binary),Index(⚠),")"))),Term(QualIdentifier(Identifier("(",_,SimpleSymbol,⚠(Decimal),Index(⚠),")"))),Term(QualIdentifier(Identifier("(",_,SimpleSymbol,⚠(String),Index(⚠),")"))),Term(QualIdentifier(Identifier("(",_,SimpleSymbol,⚠(Keyword),Index(⚠),")"))),")"),")"))
